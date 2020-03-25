@@ -1,6 +1,8 @@
 import 'package:brewcrew/screens/authenticate/register.dart';
 import 'package:brewcrew/services/auth.dart';
+import 'package:brewcrew/shared/loading.dart';
 import 'package:flutter/material.dart';
+import '../../shared/constants.dart';
 
 class SignIn extends StatefulWidget {
 
@@ -17,6 +19,8 @@ class _SignInState extends State<SignIn> {
   final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
 
+  bool loading = false;
+
   //Text Field State
   String email = '';
   String password = '';
@@ -24,7 +28,7 @@ class _SignInState extends State<SignIn> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return loading ? Loading() : Scaffold(
       backgroundColor: Colors.brown[100],
       appBar: AppBar(
         backgroundColor: Colors.brown[400],
@@ -48,6 +52,7 @@ class _SignInState extends State<SignIn> {
             children: <Widget>[
               SizedBox(height: 20.0),
               TextFormField(
+                decoration: textInputDecoration.copyWith(hintText: 'Email'),
                 validator: (val) => val.isEmpty ? 'Enter an Email' : null,
                 onChanged: (val) {
                   setState(() {
@@ -57,6 +62,7 @@ class _SignInState extends State<SignIn> {
               ),
               SizedBox(height: 20.0),
               TextFormField(
+                decoration: textInputDecoration.copyWith(hintText: 'Password'),
                 onChanged: (val) {
                   setState(() {
                     password = val;
@@ -76,9 +82,13 @@ class _SignInState extends State<SignIn> {
                 ),
                 onPressed: () async {
                   if(_formKey.currentState.validate()){
-                      dynamic result = await _auth.signInWithEMailAndPassword(email, password);
+                    setState(() {
+                      loading = true;
+                    });
+                    dynamic result = await _auth.signInWithEMailAndPassword(email, password);
                     if (result == null){
                       setState(() {
+                        loading = false;
                         error = 'Could not Sign In with those Credentials!';
                       });
                     }
